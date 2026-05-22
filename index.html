@@ -1182,9 +1182,8 @@
 
     <!-- AI CHAT BOT & LIVE PITCH SANDBOX (USING DEEPSEEK-CHAT) -->
     <script>
-        // 绑定正确的 DeepSeek API Key (已将您的真实sk密钥安全载入)
-        const apiKey = "sk-42b03f51fc094534b5ba56499648cea0"; 
-        const modelEndpoint = "https://api.deepseek.com/chat/completions";
+        // API Key 已安全存储在 Cloudflare Worker 服务端，前端不再暴露
+        const modelEndpoint = "https://tangfei-deepseek-proxy.tangfei0201.workers.dev";
 
         // 全文简历数据注入给智能体的 System Instruction
         const tangfeiSystemPrompt = `
@@ -1258,8 +1257,7 @@
                     const response = await fetch(url, {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${apiKey}`
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify(payload)
                     });
@@ -1330,7 +1328,7 @@
                 if (err.message.includes("fetch")) {
                     diagnosticTips = "<br><br><strong>🔍 诊断建议</strong>：这通常是由于<strong>浏览器跨域限制（CORS）</strong>、<strong>网络防火墙拦截</strong>或<strong>本地 file:// 协议限制</strong>导致的。建议将简历代码运行在本地服务器中（如 VS Code Live Server，或使用 Python `python -m http.server` 运行），并确保您的代理软件已完全代理谷歌/DeepSeek API 域名。";
                 } else if (err.message.includes("401") || err.message.includes("403")) {
-                    diagnosticTips = "<br><br><strong>🔑 诊断建议</strong>：这代表请求已成功抵达 DeepSeek 服务器，但由于 <strong>API Key 无效、过期、格式不对（请确保是 sk- 开头的密钥）或账户余额不足</strong> 而被拒绝。请检查代码中第 1121 行填写的密钥。";
+                    diagnosticTips = "<br><br><strong>🔑 诊断建议</strong>：请求已到达服务器，但 API 鉴权失败。请确认 DeepSeek 账户余额充足且 API Key 有效。";
                 }
                 
                 appendMessage("ai", `❌ <strong>智能替身链接发生故障</strong>：<br><code class="text-red-400 bg-gray-950 px-1.5 py-0.5 rounded">${err.message}</code>${diagnosticTips}<br><br>📧 欢迎随时通过我的真实渠道获取详实背调资料：<br><strong>邮箱：tangfei0201@gmail.com / 电话：+86 193 0134 2363 / 微信：Mr_titiVolfski</strong>`);
