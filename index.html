@@ -159,6 +159,26 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* --- Back to top button --- */
+        #back-to-top {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.2s ease;
+        }
+        #back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        #back-to-top:hover {
+            transform: translateY(-3px);
+        }
+
+        /* --- Active nav link --- */
+        .nav-link.active {
+            background-color: #0047FF;
+            color: #fff;
+        }
     </style>
 </head>
 <body class="text-black overflow-x-hidden">
@@ -168,6 +188,11 @@
         <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span id="toast-message" class="font-bold tracking-wide">复制成功！</span>
     </div>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 left-6 z-50 w-12 h-12 bg-[#0047FF] text-white border-2 border-black neo-shadow flex items-center justify-center font-black text-xl" title="返回顶部" aria-label="返回顶部">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"/></svg>
+    </button>
 
     <!-- 顶部极简大标头（风格参考顶部） -->
     <header class="w-full bg-white border-b-4 border-black py-4 px-4 md:px-8">
@@ -233,20 +258,20 @@
     <nav class="sticky top-0 z-40 bg-white border-y-4 border-black shadow-sm">
         <div class="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center overflow-x-auto">
             <div class="flex divide-x-2 divide-black">
-                <a href="#about" class="px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
+                <a href="#about" class="nav-link px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
                     <span>01</span> ABOUT ME
                 </a>
-                <a href="#skills" class="px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
+                <a href="#skills" class="nav-link px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
                     <span>02</span> COMPETENCIES
                 </a>
-                <a href="#experience" class="px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
+                <a href="#experience" class="nav-link px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
                     <span>03</span> EXPERIENCES
                 </a>
-                <a href="#projects" class="px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
+                <a href="#projects" class="nav-link px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
                     <span>04</span> PROJECTS
                 </a>
-                <a href="#ai-co-pilot" class="px-6 py-4 text-sm font-extrabold bg-[#0047FF] text-white hover:bg-black hover:text-white transition-colors flex items-center gap-2">
-                    <span class="animate-pulse">✨</span> AI CO-PILOT
+                <a href="#ai-co-pilot" class="nav-link px-6 py-4 text-sm font-extrabold hover:bg-black hover:text-white transition-colors flex items-center gap-2">
+                    <span>05</span> AI CO-PILOT
                 </a>
             </div>
             <div class="hidden md:flex items-center gap-4 px-4">
@@ -944,6 +969,99 @@
             });
         })();
 
+        // ============ 返回顶部按钮 ============
+        (function() {
+            var btn = document.getElementById('back-to-top');
+            if (!btn) return;
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 500) {
+                    btn.classList.add('show');
+                } else {
+                    btn.classList.remove('show');
+                }
+            });
+        })();
+
+        // ============ 导航当前板块高亮 ============
+        (function() {
+            var navLinks = document.querySelectorAll('.nav-link');
+            var sections = [];
+            navLinks.forEach(function(link) {
+                var id = link.getAttribute('href').replace('#', '');
+                var section = document.getElementById(id);
+                if (section) sections.push({ id: id, link: link, section: section });
+            });
+
+            if (sections.length === 0) return;
+
+            var navObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(function(l) { l.classList.remove('active'); });
+                        var active = document.querySelector('.nav-link[href="#' + entry.target.id + '"]');
+                        if (active) {
+                            active.classList.add('active');
+                        }
+                    }
+                });
+            }, { threshold: 0, rootMargin: '0px 0px -75% 0px' });
+
+            sections.forEach(function(s) { navObserver.observe(s.section); });
+        })();
+
+        // ============ AI 回复打字机效果 ============
+        function typewriteMessage(el, text, speed) {
+            speed = speed || 25;
+            var i = 0;
+            // Parse the text into segments: HTML tags vs plain text
+            var segments = [];
+            var regex = /(<[^>]+>)/g;
+            var lastIdx = 0;
+            var match;
+            while ((match = regex.exec(text)) !== null) {
+                if (match.index > lastIdx) {
+                    segments.push({ type: 'text', value: text.substring(lastIdx, match.index) });
+                }
+                segments.push({ type: 'html', value: match[0] });
+                lastIdx = regex.lastIndex;
+            }
+            if (lastIdx < text.length) {
+                segments.push({ type: 'text', value: text.substring(lastIdx) });
+            }
+
+            var htmlSoFar = '';
+            var textRemaining = '';
+            // Flatten to character sequence
+            var chars = [];
+            segments.forEach(function(seg) {
+                if (seg.type === 'html') {
+                    chars.push({ html: seg.value });
+                } else {
+                    for (var j = 0; j < seg.value.length; j++) {
+                        chars.push({ char: seg.value[j] });
+                    }
+                }
+            });
+
+            var idx = 0;
+            var timer = setInterval(function() {
+                if (idx < chars.length) {
+                    if (chars[idx].html !== undefined) {
+                        htmlSoFar += chars[idx].html;
+                    } else {
+                        htmlSoFar += chars[idx].char;
+                    }
+                    el.innerHTML = htmlSoFar;
+                    idx++;
+                    // Auto-scroll
+                    var chatBox = document.getElementById('chat-messages');
+                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+                } else {
+                    clearInterval(timer);
+                }
+            }, speed);
+        }
+
         // 全局探针：程序化测试并适配图片路径，解决中文字符/空格引起的404
         const probeAndLoadImage = (imgElementId, paths, fallbackElementId) => {
             const imgEl = document.getElementById(imgElementId);
@@ -1434,12 +1552,12 @@
                     diagnosticTips = "<br><br><strong>🔑 诊断建议</strong>：请求已到达服务器，但 API 鉴权失败。请确认 DeepSeek 账户余额充足且 API Key 有效。";
                 }
                 
-                appendMessage("ai", `❌ <strong>智能替身链接发生故障</strong>：<br><code class="text-red-400 bg-gray-950 px-1.5 py-0.5 rounded">${err.message}</code>${diagnosticTips}<br><br>📧 欢迎随时通过我的真实渠道获取详实背调资料：<br><strong>邮箱：tangfei0201@gmail.com / 电话：+86 193 0134 2363 / 微信：Mr_titiVolfski</strong>`);
+                appendMessage("ai", `❌ <strong>智能替身链接发生故障</strong>：<br><code class="text-red-400 bg-gray-950 px-1.5 py-0.5 rounded">${err.message}</code>${diagnosticTips}<br><br>📧 欢迎随时通过我的真实渠道获取详实背调资料：<br><strong>邮箱：tangfei0201@gmail.com / 电话：+86 193 0134 2363 / 微信：Mr_titiVolfski</strong>`, false);
             }
         }
 
         // 渲染消息气泡
-        function appendMessage(sender, text) {
+        function appendMessage(sender, text, useTypewriter) {
             const chatMessages = document.getElementById('chat-messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = "flex items-start gap-3 animate-fade-in";
@@ -1448,10 +1566,17 @@
                 const formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 messageDiv.innerHTML = `
                     <div class="w-8 h-8 rounded-none bg-[#0047FF] text-white flex items-center justify-center font-bold text-xs neo-border border-white shrink-0">AI</div>
-                    <div class="bg-gray-900 border border-gray-800 p-3 text-xs leading-relaxed max-w-[85%] text-left">
-                        ${formattedText}
-                    </div>
+                    <div class="ai-text-container bg-gray-900 border border-gray-800 p-3 text-xs leading-relaxed max-w-[85%] text-left"></div>
                 `;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                var textContainer = messageDiv.querySelector('.ai-text-container');
+                if (useTypewriter !== false) {
+                    typewriteMessage(textContainer, formattedText, 20);
+                } else {
+                    textContainer.innerHTML = formattedText;
+                }
             } else {
                 messageDiv.innerHTML = `
                     <div class="w-8 h-8 rounded-none bg-yellow-400 text-black flex items-center justify-center font-bold text-xs neo-border border-black shrink-0">USER</div>
@@ -1459,10 +1584,9 @@
                         ${text}
                     </div>
                 `;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // 现场科技提案生成 (高级沙盒功能)
